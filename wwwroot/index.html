@@ -4,14 +4,36 @@
     <meta charset="utf-8" />
     <title>MODAS</title>
     <!-- bootstrap -->
-    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
     <!-- font awesome -->
     <link rel="stylesheet" href="css/all.min.css" />
     <link href="css/client.css" rel="stylesheet" />
 </head>
 <body>
-
-    <div class="container">
+    <!-- toasts -->
+    <div role="alert" aria-live="assertive" aria-atomic="true" style="position:fixed;top:65px;right:10px;min-height:200px;">
+        <div style="position:absolute;top:0;right:0;" id="toast_container">
+            <!-- toast container -->
+            <!--<div id="myToast" class="toast" style="min-width:300px;">
+                <div class="toast-header">
+                    <strong class="mr-auto">Update Complete</strong>
+                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="toast-body"><i class="far fa-edit"></i> Event flag added.</div>
+            </div>-->
+        </div>
+    </div>
+    <!-- navbar -->
+    <nav class="navbar fixed-top navbar-light" style="background-color:#dedede;">
+        <div class="navbar-brand">
+            <i class="fas fa-shield-alt"></i>
+            <span class="d-none d-md-inline" style="font-variant:small-caps;">Moving Object Detection Alert System</span>
+        </div>
+    </nav>
+    <!-- content -->
+    <div class="container" style="margin-top:65px;">
         <table class="table table-sm table-striped table-shadow">
             <thead class="bg-success text-white">
                 <tr><th class="text-center">Flag</th><th>Date</th><th>Time</th><th>Location</th></tr>
@@ -41,7 +63,7 @@
     <!-- jQuery framework -->
     <script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
     <!-- bootstrap -->
-    <script src="js/bootstrap.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     <script src="js/client.js"></script>
 </body>
 </html>
