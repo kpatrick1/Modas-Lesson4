@@ -8,7 +8,6 @@
     <Folder Include="Controllers\" />
     <Folder Include="Views\" />
     <Folder Include="Views\Home\" />
-    <Folder Include="wwwroot\webfonts\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,44 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="appsettings.json" />
-    <Content Remove="wwwroot\css\all.css" />
     <Content Remove="wwwroot\css\all.min.css" />
-    <Content Remove="wwwroot\webfonts\fa-brands-400.eot" />
-    <Content Remove="wwwroot\webfonts\fa-brands-400.svg" />
-    <Content Remove="wwwroot\webfonts\fa-brands-400.ttf" />
-    <Content Remove="wwwroot\webfonts\fa-brands-400.woff" />
-    <Content Remove="wwwroot\webfonts\fa-brands-400.woff2" />
-    <Content Remove="wwwroot\webfonts\fa-regular-400.eot" />
-    <Content Remove="wwwroot\webfonts\fa-regular-400.svg" />
-    <Content Remove="wwwroot\webfonts\fa-regular-400.ttf" />
-    <Content Remove="wwwroot\webfonts\fa-regular-400.woff" />
-    <Content Remove="wwwroot\webfonts\fa-regular-400.woff2" />
-    <Content Remove="wwwroot\webfonts\fa-solid-900.eot" />
-    <Content Remove="wwwroot\webfonts\fa-solid-900.svg" />
-    <Content Remove="wwwroot\webfonts\fa-solid-900.ttf" />
-    <Content Remove="wwwroot\webfonts\fa-solid-900.woff" />
-    <Content Remove="wwwroot\webfonts\fa-solid-900.woff2" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="appsettings.json" />
-    <None Include="wwwroot\css\all.css" />
     <None Include="wwwroot\css\all.min.css" />
-    <None Include="wwwroot\webfonts\fa-brands-400.eot" />
-    <None Include="wwwroot\webfonts\fa-brands-400.svg" />
-    <None Include="wwwroot\webfonts\fa-brands-400.ttf" />
-    <None Include="wwwroot\webfonts\fa-brands-400.woff" />
-    <None Include="wwwroot\webfonts\fa-brands-400.woff2" />
-    <None Include="wwwroot\webfonts\fa-regular-400.eot" />
-    <None Include="wwwroot\webfonts\fa-regular-400.svg" />
-    <None Include="wwwroot\webfonts\fa-regular-400.ttf" />
-    <None Include="wwwroot\webfonts\fa-regular-400.woff" />
-    <None Include="wwwroot\webfonts\fa-regular-400.woff2" />
-    <None Include="wwwroot\webfonts\fa-solid-900.eot" />
-    <None Include="wwwroot\webfonts\fa-solid-900.svg" />
-    <None Include="wwwroot\webfonts\fa-solid-900.ttf" />
-    <None Include="wwwroot\webfonts\fa-solid-900.woff" />
-    <None Include="wwwroot\webfonts\fa-solid-900.woff2" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Models\FakeEventRepository.cs" />
