@@ -1,23 +1,104 @@
 ﻿// Turn off ESLint (Windows): Tools - Options - Text Editor - Javascript - Linting
 $(function () {
     var toasts = [];
-    getEvents(1);
+    var refreshInterval;
+    verifyToken()
 
-    function getEvents(page) {
+    function verifyToken() {
+        // check for existing token
+        var token = Cookies.get('token');
+        if (token) {
+            // user has token
+            getEvents(1);
+            // hide sign in link, show sign out link
+            $('#signIn').hide();
+            $('#signOut').show();
+            // enable auto-refresh button
+            $("#auto-refresh").prop( "disabled", false );
+            // initialize auto-refresh
+            initAutoRefresh()
+        } else {
+            // show sign in link, hide sign out link
+            $('#signIn').show();
+            $('#signOut').hide();
+            // display modal
+            $('#signInModal').modal();
+
+        }
+    }
+
+    function refreshEvents() {
         $.getJSON({
-            url: "../api/event/page" + page,
+            url: "../api/event/count",
             success: function (response, textStatus, jqXhr) {
-                //console.log(response);
-                showTableBody(response.events);
-                showPagingInfo(response.pagingInfo);
-                initButtons();
+                if (response != $('#total').html()) {
+                    getEvents($('#current').data('val'));
+                    
+                    toast("Motion Detected", "New motion alert detected!", "fas fa-user-secret");
+                    var snd = new Audio("sounds/toast.wav"); // buffers automatically when created
+                    snd.play();
+                }
             },
             error: function (jqXHR, textStatus, errorThrown) {
+                // check for 401 - Unauthorized
+                if (jqXHR.status == 401) {
+                    $('#signOut a').click();
+                    console.log("token expired");
+                }
                 // log the error to the console
                 console.log("The following error occured: " + jqXHR.status, errorThrown);
             }
         });
     }
+
+    function getEvents(page) {
+        $.getJSON({
+            headers: { "Authorization": 'Bearer ' + Cookies.get('token') },
+            url: "../api/event/page" + page,
+            success: function (response, textStatus, jqXhr) {
+                showTableBody(response.events);
+                showPagingInfo(response.pagingInfo);
+                initButtons();
+                // Show content
+                $('#content').show();
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                // check for 401 - Unauthorized
+                if (jqXHR.status == 401) {
+                    $('#signOut a').click();
+                    console.log("token expired");
+                }
+                // log the error to the console
+                console.log("The following error occured: " + jqXHR.status, errorThrown);
+            }
+        });
+    }
+
+    $('#signIn a').on('click', function (e) {
+        e.preventDefault();
+        // display modal
+        $('#signInModal').modal();
+    });
+
+    $('#signOut a').on('click', function (e) {
+        e.preventDefault();
+        // delete cookie
+        Cookies.remove('token');
+        // delete html from table body
+        $('tbody').html("");
+        // hide content
+        $('#content').hide();
+        // hide sign out link, show sign in link
+        $('#signIn').show();
+        $('#signOut').hide();
+        // disable auto-refresh button
+        $("#auto-refresh").prop("disabled", true);
+        // if timer is running, clear it
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+    });
+
 
     // delegated event handler needed
     // http://api.jquery.com/on/#direct-and-delegated-events
@@ -34,7 +115,7 @@ $(function () {
         }
         // AJAX to update database
         $.ajax({
-            headers: { "Content-Type": "application/json" },
+            headers: { "Authorization": 'Bearer ' + Cookies.get("token"), 'Content-Type': 'application/json' },
             url: "../api/event/" + $(this).data('id'),
             type: 'patch',
             data: JSON.stringify([{ "op": "replace", "path": "Flagged", "value": checked }]),
@@ -46,16 +127,114 @@ $(function () {
                 toast("Update Complete", "Event flag " + (checked ? "added." : "removed."), "far fa-edit");
             },
             error: function (jqXHR, textStatus, errorThrown) {
+                // check for 401 - Unauthorized
+                if (jqXHR.status == 401) {
+                    console.log("cookie expired");
+                    $('#signOut a').click();
+                }
                 // log the error to the console
                 console.log("The following error occured: " + jqXHR.status, errorThrown);
             }
         });
     });
 
+    $('#submitButton').on('click', function (e) {
+        e.preventDefault();
+
+        // reset any fields marked with errors
+        $('.form-control').removeClass('is-invalid');
+        // create an empty errors array
+        var errors = [];
+        // check for empty username
+        if ($('#username').val().length == 0) {
+            errors.push($('#username'));
+        }
+        // check for empty password
+        if ($('#password').val().length == 0) {
+            errors.push($('#password'));
+        }
+        // username and/or password empty, display errors
+        if (errors.length > 0) {
+            showErrors(errors);
+        } else {
+            // verify username and password using the token api
+            $.ajax({
+                headers: { 'Content-Type': 'application/json' },
+                url: "../api/token",
+                type: 'post',
+                data: JSON.stringify({ "username": $('#username').val(), "password": $('#password').val() }),
+                success: function (data) {
+                    // save token in a cookie
+                    Cookies.set('token', data["token"], { expires: 7 });
+                    // hide modal
+                    $('#signInModal').modal('hide');
+                    verifyToken();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    // check for 401 Unauthorized
+                    if (jqXHR.status == 401) {
+                        errors.push($('#username'));
+                        errors.push($('#password'));
+                        showErrors(errors);
+                    } else {
+                        console.log("The following error occured: " + jqXHR.status, errorThrown);
+                    }
+                }
+            });
+        }
+    });
+
     // event listeners for first/next/prev/last buttons
     $('#next, #prev, #first, #last').on('click', function () {
         getEvents($(this).data('page'));
     });
+
+    // event listener to toggle data auto-refresh
+    $('#auto-refresh').on('click', function () {
+        $(this).data('val', !($(this).data('val')));
+        initAutoRefresh();
+    });
+
+    // 
+    $('#signInModal').on('keypress', function (event) {
+        if (event.keyCode == 13) {
+            $('#submitButton').click();
+        }
+    });
+
+    function showErrors(errors) {
+        for (var i = 0; i < errors.length; i++) {
+            // apply bootstrap is-invalid class to any field with errors
+            errors[i].addClass('is-invalid');;
+        }
+        // shake modal for effect
+        $('#signInModal').css('animation-duration', '0.7s')
+        $('#signInModal').addClass('animated shake').on('animationend', function () {
+            $(this).removeClass('animated shake');
+        });
+    }
+
+
+    function initAutoRefresh() {
+        // if auto-refresh button is set to true
+        if ($('#auto-refresh').data('val')) {
+            // display checked icon
+            $('#auto-refresh i').removeClass('fa-square').addClass('fa-check-square');
+            // if the timer is on, clear it (this is probably unnecessary)
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            // start timer
+            refreshInterval = setInterval(refreshEvents, 2000);
+        } else {
+            // display unchecked icon
+            $('#auto-refresh i').removeClass('fa-check-square').addClass('fa-square');
+            // if the timer is on, clear it
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+    }
 
     function toast(header, text, icon) {
         // create unique id for toast using array length
@@ -108,6 +287,7 @@ $(function () {
         $('#next').data('page', p.nextPage);
         $('#prev').data('page', p.previousPage);
         $('#last').data('page', p.totalPages);
+        $('#current').data('val', p.currentPage);
     }
 
     function initButtons() {

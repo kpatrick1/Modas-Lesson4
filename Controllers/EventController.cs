@@ -3,12 +3,13 @@ using System.Linq;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using Modas.Models;
 using Modas.Models.ViewModels;
 
 namespace Modas.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]"), Authorize]
     public class EventController : Controller
     {
         private readonly int PageSize = 20;
@@ -19,6 +20,11 @@ namespace Modas.Controllers
         // returns all events (unsorted)
         public IEnumerable<Event> Get() => repository.Events
             .Include(e => e.Location);
+
+        [HttpGet, AllowAnonymous]
+        [Route("count")]
+        public int GetCount() => repository.Events.Count();
+
 
         [HttpGet("page{page:int}")]
         // returns all events by page
