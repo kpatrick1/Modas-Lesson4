@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -40,14 +41,22 @@ namespace Modas.Controllers
 
         private string BuildToken(UserModel user)
         {
+            var claims = new[] {
+                new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName),
+                new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Birthdate, user.Birthdate.ToString("yyyy-MM-dd"))
+            };
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-              _config["Jwt:Issuer"],
-              _config["Jwt:Issuer"],
-              expires: DateTime.Now.AddDays(7),
-              signingCredentials: creds);
+              null, // issuer
+                null, // audience
+                claims,
+                expires: DateTime.Now.AddDays(7),
+                signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
@@ -56,9 +65,10 @@ namespace Modas.Controllers
         {
             UserModel user = null;
 
-            if (login.Username == "john" && login.Password == "secret")
+            if ((login.Username).ToLower() == "john" && login.Password == "secret")
             {
-                user = new UserModel { Name = "John Doe", Email = "john.doe@mail.com" };
+                user = new UserModel { FirstName = "John", LastName = "Doe", Email = "john.doe@mail.com" };
+                // BirthDate is deliberately left null
             }
             return user;
         }
@@ -71,7 +81,8 @@ namespace Modas.Controllers
 
         private class UserModel
         {
-            public string Name { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
             public string Email { get; set; }
             public DateTime Birthdate { get; set; }
         }
